@@ -1,19 +1,25 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import React from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { CircularSpinner } from "@/components/circular-spinner";
-import Editor, { Monaco} from '@monaco-editor/react';
+import MonacoEditor from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-
+import {
+  registerCompletion,
+  type Monaco,
+  type StandaloneCodeEditor,
+} from 'monacopilot';
 interface TextEditorProps {
     // language: Specifies the programming language for the editor. It must be one of the predefined options (although you can add more if you want)
     initialLanguage: "javascript" | "typescript" | "python" | "java" | "c";
 }
   
   const TextEditor: React.FC<TextEditorProps> = ({initialLanguage}) => {
+    const [editor, setEditor] = useState<StandaloneCodeEditor | null>(null);
+    const [monaco, setMonaco] = useState<Monaco | null>(null);
     const [language, setLanguage] = useState<TextEditorProps["initialLanguage"]>(initialLanguage);
     const [loading, setLoading] = useState(true);
     const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -40,7 +46,19 @@ interface TextEditorProps {
 
     const { resolvedTheme } = useTheme();
 
-
+    useEffect(() => {
+      if (!monaco || !editor) return;
+  
+      const completion = registerCompletion(monaco, editor, {
+        endpoint: 'http://localhost:8080/complete',
+        language: 'javascript',
+      });
+  
+      return () => {
+        completion.deregister();
+      };
+    }, [monaco, editor]);
+  
     return (
       <div>
         <div style={{ marginBottom: '10px' }}>
@@ -54,7 +72,16 @@ interface TextEditorProps {
           </select>
         </div>
       
-        <Editor height="90vh" theme= {resolvedTheme ==="dark" ? "vs-dark" : "vs"} defaultLanguage="javascript" language={language} defaultValue="// some comment" onMount={handleEditorDidMount} />
+        <MonacoEditor 
+          height="90vh" 
+          theme= {resolvedTheme ==="dark" ? "vs-dark" : "vs"} 
+          defaultLanguage="javascript" 
+          language={language} defaultValue="// some comment" 
+          onMount={(editor, monaco) => {
+            setEditor(editor);
+            setMonaco(monaco);
+            setLoading(false);
+          }} />
       </div>
     );
   };
