@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react";
-import Image from "next/image";
+// import Image from "next/image";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/navbar";
 import { Separator } from "@/components/ui/separator";
-import { Card } from "@/components/ui/card";
+// import { Card } from "@/components/ui/card";
 import QuestionPanel from "@/components/QuestionPanel";
 
 const TextEditor = dynamic(() => import("@/components/editor"), { ssr: false });
@@ -69,7 +69,7 @@ export default function Home() {
         <div className="flex-1 min-w-[25%]">
           <div className="h-full p-3">
             <TextEditor 
-              language="python"
+              initialLanguage="python"
             />
           </div>
         </div>
