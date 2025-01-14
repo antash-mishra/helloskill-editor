@@ -7,15 +7,21 @@ import Navbar from "@/components/navbar";
 import { Separator } from "@/components/ui/separator";
 // import { Card } from "@/components/ui/card";
 import QuestionPanel from "@/components/QuestionPanel";
+import { Button } from "@/components/ui/button";
+import { Lightbulb, ShowerHead } from "lucide-react";
+import TextEditor from "@/components/editor";
 
-const TextEditor = dynamic(() => import("@/components/editor"), { ssr: false });
+
+// const TextEditor = dynamic(() => import("@/components/editor"), { ssr: false });
 
 export default function Home() {
-  const [questionWidth, setQuestionWidth] = useState<number>(50); // Width of the question panel in %
+  const [questionWidth, setQuestionWidth] = useState<number>(50);
+  const [showHints, setShowHints] = useState<boolean>(false);
+  const [currentHint, setCurrentHint] = useState<string>("");
 
   const handleDrag = (e: MouseEvent) => {
     const newWidth = (e.clientX / window.innerWidth) * 100;
-    setQuestionWidth(Math.min(75, Math.max(25, newWidth))); // Limit between 25% and 75%
+    setQuestionWidth(Math.min(75, Math.max(25, newWidth)));
   };
 
   const startDragging = (e: React.MouseEvent) => {
@@ -29,6 +35,13 @@ export default function Home() {
     document.removeEventListener("mouseup", stopDragging);
   };
 
+  const handleHintsChange = (hints: boolean) => {
+    setShowHints(hints);
+  };
+
+  const handleCurrentHint = (hint: string) => {
+    setCurrentHint(hint);
+  };
 
   return (
 
@@ -52,7 +65,7 @@ export default function Home() {
           }}
         >
           <div className="h-full overflow-y-auto px-4 py-3">
-            <QuestionPanel />
+            <QuestionPanel showHints={showHints} currentHint={currentHint}/>
           </div>
         </div>
 
@@ -61,16 +74,22 @@ export default function Home() {
           className="relative w-1.5 hover:w-2 bg-gray-200 cursor-col-resize hover:bg-blue-400 transition-all duration-150 ease-in-out"
           onMouseDown={startDragging}
         >
-          {/* Drag Handle Indicator */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-8 bg-gray-400 rounded-full opacity-50" />
         </div>
 
         {/* Editor Panel */}
-        <div className="flex-1 min-w-[25%]">
-          <div className="h-full p-3">
-            <TextEditor 
-              initialLanguage="python"
-            />
+        <div className="flex-1 min-w-[25%] flex flex-col">
+          
+          {/* Editor Container */}
+          <div className="flex-1">
+            <div className="h-full p-3">
+              <TextEditor 
+                initialLanguage="python"
+                hints = {showHints}
+                onHintsChange={handleHintsChange}
+                onHintReceived={handleCurrentHint}
+              />
+            </div>
           </div>
         </div>
       </div>
